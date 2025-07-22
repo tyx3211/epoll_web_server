@@ -55,6 +55,7 @@ void handle_api_login(Connection* conn, ServerConfig* config, int epollFd) {
         }
         
         if (credentials_valid) {
+            log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 200);
             char* token_str = generate_token_for_user(username, config);
             if (token_str) {
                 char json_response[1024];
@@ -66,9 +67,11 @@ void handle_api_login(Connection* conn, ServerConfig* config, int epollFd) {
                 response_body = "{\"status\":\"error\", \"message\":\"Internal server error: could not create token.\"}";
             }
         } else {
+            log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 401);
             response_body = "{\"status\":\"error\", \"message\":\"Invalid credentials.\"}";
         }
     } else {
+        log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 400);
         response_body = "{\"status\":\"error\", \"message\":\"Missing username or password.\"}";
     }
 
@@ -90,6 +93,35 @@ void handle_api_login(Connection* conn, ServerConfig* config, int epollFd) {
 
     free(username);
     free(password);
+}
+
+void handle_api_upload_test(Connection* conn, ServerConfig* config, int epollFd) {
+    (void)config; // config is unused in this handler
+    log_system(LOG_INFO, "Upload Test API: Received request with Content-Length: %zu", conn->request.content_length);
+    
+    char response_body[256];
+    
+    // The size of large_post_body.txt is 5 * 1024 * 1024 = 5242880 bytes.
+    if (conn->request.content_length == 5242880) {
+        log_system(LOG_INFO, "Upload Test API: Successfully received the complete large request body (%zu bytes).", conn->request.content_length);
+        snprintf(response_body, sizeof(response_body), "{\"status\":\"success\", \"message\":\"Received %zu bytes.\"}", conn->request.content_length);
+    } else {
+        log_system(LOG_WARNING, "Upload Test API: Received incomplete body. Expected %d, got %zu.", 5242880, conn->request.content_length);
+        snprintf(response_body, sizeof(response_body), "{\"status\":\"error\", \"message\":\"Expected 5242880 bytes, but received %zu.\"}", conn->request.content_length);
+    }
+
+    log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 200);
+
+    char header[512];
+    int headerLen = snprintf(header, sizeof(header),
+                             "HTTP/1.1 200 OK\r\n"
+                             "Connection: close\r\n"
+                             "Content-Type: application/json\r\n"
+                             "Content-Length: %ld\r\n\r\n",
+                             strlen(response_body));
+    
+    queue_data_for_writing(conn, header, headerLen, epollFd);
+    queue_data_for_writing(conn, response_body, strlen(response_body), epollFd);
 }
 
 
@@ -136,6 +168,8 @@ void handle_api_search(Connection* conn, ServerConfig* config, int epollFd) {
     
     const char* body = strlen(error_msg) > 0 ? error_msg : (strlen(response_buffer) > 0 ? response_buffer : "No results found.");
     
+    log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 200);
+
     char header[512];
     int headerLen = snprintf(header, sizeof(header),
                              "HTTP/1.1 200 OK\r\n"
@@ -155,6 +189,7 @@ void handle_api_me(Connection* conn, ServerConfig* config, int epollFd) {
     char* authed_user = authenticate_request(conn, config);
 
     if (authed_user) {
+        log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 200);
         char response_body[256];
         snprintf(response_body, sizeof(response_body), "{\"status\":\"success\", \"user\":{\"username\":\"%s\"}}", authed_user);
 
@@ -171,7 +206,7 @@ void handle_api_me(Connection* conn, ServerConfig* config, int epollFd) {
         
         free(authed_user); // Free the username string returned by the auth function
     } else {
-        // Authentication failed
+        // Authentication failed - This part is already correct
         log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, 401);
         char response[] = "HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\nUnauthorized";
         queue_data_for_writing(conn, response, sizeof(response) - 1, epollFd);

@@ -10,6 +10,12 @@
 void handle_api_login(Connection* conn, ServerConfig* config, int epollFd);
 
 /**
+ * @brief Handles the /api/upload_test POST request.
+ * A test endpoint to verify handling of large request bodies.
+ */
+void handle_api_upload_test(Connection* conn, ServerConfig* config, int epollFd);
+
+/**
  * @brief Handles the /api/search POST request.
  * Implements the search logic described in the requirements.
  */

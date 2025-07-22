@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     router_add_route("POST", "/api/login", handle_api_login);
     router_add_route("GET", "/api/search", handle_api_search); // Changed from POST to GET
     router_add_route("GET", "/api/me", handle_api_me);
+    router_add_route("POST", "/api/upload_test", handle_api_upload_test);
     printf("Registered API routes.\n");
 
     startServer(config_path);
