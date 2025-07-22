@@ -1,31 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API Search</title>
+    <title>学生数据查询</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <div class="form-container">
-        <h2>File Content Search</h2>
-        <form id="search-form">
+        <h2>学生数据查询 (GET)</h2>
+        <form id="search-form-get">
             <div class="form-group">
-                <label for="key1">File Name (e.g., 2011, 2012)</label>
-                <input type="text" id="key1" name="key1" required>
+                <label for="filename-get">入学年份 (e.g., 2011, 2012)</label>
+                <input type="text" id="filename-get" name="filename" required>
             </div>
             <div class="form-group">
-                <label for="key2">Keyword</label>
-                <input type="text" id="key2" name="key2" required>
+                <label for="keyword-get">关键词 (学号/姓名/性别)</label>
+                <input type="text" id="keyword-get" name="keyword" required>
             </div>
-            <button type="submit">Search</button>
+            <button type="submit">GET 查询</button>
         </form>
     </div>
 
-    <div class="form-container" style="margin-top: 2rem;">
-        <h3>Results:</h3>
-        <pre class="response-area" id="results">...</pre>
+    <hr class="divider">
+
+    <div class="form-container">
+        <h2>学生数据查询 (POST)</h2>
+        <form id="search-form-post">
+            <div class="form-group">
+                <label for="filename-post">入学年份 (e.g., 2011, 2012)</label>
+                <input type="text" id="filename-post" name="filename" required>
+            </div>
+            <div class="form-group">
+                <label for="keyword-post">关键词 (学号/姓名/性别)</label>
+                <input type="text" id="keyword-post" name="keyword" required>
+            </div>
+            <button type="submit">POST 查询</button>
+        </form>
+    </div>
+
+    <div class="results-container">
+        <h3>查询结果:</h3>
+        <p id="status-message">请发起查询...</p>
+        <table id="results-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                </tr>
+            </thead>
+            <tbody id="results-body">
+            </tbody>
+        </table>
     </div>
 
     <footer>
@@ -33,24 +61,77 @@
     </footer>
 
     <script>
-        document.getElementById('search-form').addEventListener('submit', function(event) {
+        const getForm = document.getElementById('search-form-get');
+        const postForm = document.getElementById('search-form-post');
+        const statusMessage = document.getElementById('status-message');
+        const resultsTable = document.getElementById('results-table');
+        const resultsBody = document.getElementById('results-body');
+
+        // Function to render results into the table
+        function renderResults(data) {
+            resultsBody.innerHTML = ''; // Clear previous results
+            if (data.trim() === 'No results found.' || data.trim() === '') {
+                statusMessage.textContent = '未找到匹配的学生数据。';
+                resultsTable.style.display = 'none';
+                statusMessage.style.display = 'block';
+                return;
+            }
+            
+            statusMessage.style.display = 'none';
+            resultsTable.style.display = 'table';
+
+            const rows = data.trim().split('\n');
+            rows.forEach(row => {
+                const columns = row.split(','); // Split by comma
+                if (columns.length >= 3) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${columns[0]}</td><td>${columns[1]}</td><td>${columns[2]}</td>`;
+                    resultsBody.appendChild(tr);
+                }
+            });
+        }
+
+        // Handle GET form submission
+        getForm.addEventListener('submit', function(event) {
             event.preventDefault();
-            const key1 = document.getElementById('key1').value;
-            const key2 = document.getElementById('key2').value;
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.textContent = 'Searching...';
+            const filename = document.getElementById('filename-get').value;
+            const keyword = document.getElementById('keyword-get').value;
+            
+            statusMessage.textContent = '正在查询...';
+            resultsTable.style.display = 'none';
+            statusMessage.style.display = 'block';
 
-            const url = `/api/search?key1=${encodeURIComponent(key1)}&key2=${encodeURIComponent(key2)}`;
+            const url = `/api/search?filename=${encodeURIComponent(filename)}&keyword=${encodeURIComponent(keyword)}`;
 
-            fetch(url, {
-                method: 'GET'
+            fetch(url)
+                .then(response => response.text())
+                .then(renderResults)
+                .catch(error => {
+                    statusMessage.textContent = '查询出错: ' + error;
+                });
+        });
+
+        // Handle POST form submission
+        postForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            statusMessage.textContent = '正在查询...';
+            resultsTable.style.display = 'none';
+            statusMessage.style.display = 'block';
+
+            const formData = new URLSearchParams(new FormData(this));
+
+            fetch('/api/search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: formData
             })
             .then(response => response.text())
-            .then(data => {
-                resultsDiv.textContent = data;
-            })
+            .then(renderResults)
             .catch(error => {
-                resultsDiv.textContent = 'Error: ' + error;
+                statusMessage.textContent = '查询出错: ' + error;
             });
         });
     </script>

@@ -29,11 +29,14 @@ header {
     background: var(--text-color);
     color: var(--card-background);
     padding: 1rem 2rem;
-    text-align: center;
+    /* text-align: center; */ /* No longer needed with flex */
     border-radius: 8px;
     margin-bottom: 2rem;
     box-sizing: border-box;
-    position: relative;
+    /* position: relative; */ /* No longer needed */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 header h1 {
@@ -42,10 +45,12 @@ header h1 {
 }
 
 header nav {
-    position: absolute;
-    top: 50%;
-    right: 2rem;
-    transform: translateY(-50%);
+    /* position: absolute; */
+    /* top: 50%; */
+    /* right: 2rem; */
+    /* transform: translateY(-50%); */
+    display: flex;
+    gap: 1.5rem; /* Add space between nav items */
 }
 
 header nav a {
@@ -169,6 +174,51 @@ pre {
     word-wrap: break-word;
     white-space: pre-wrap;
 }
+
+/* --- NEW STYLES --- */
+/* Divider for search page */
+.divider {
+    width: 100%;
+    max-width: 400px;
+    margin: 2rem auto;
+    border: 0;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Results container for search page */
+.results-container {
+    width: 100%;
+    max-width: 800px;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: var(--card-background);
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* Table styles for results */
+#results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+#results-table th,
+#results-table td {
+    border: 1px solid var(--border-color);
+    padding: 0.75rem 1rem;
+    text-align: left;
+}
+
+#results-table th {
+    background-color: var(--background-color);
+    font-weight: 600;
+}
+
+#results-table tbody tr:hover {
+    background-color: #f8fafc; /* A very light blue on hover */
+}
+
 
 /* Footer */
 footer {

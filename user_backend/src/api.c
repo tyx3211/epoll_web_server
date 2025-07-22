@@ -95,6 +95,78 @@ void handle_api_login(Connection* conn, ServerConfig* config, int epollFd) {
     free(password);
 }
 
+void handle_api_register(Connection* conn, ServerConfig* config, int epollFd) {
+    (void)config; // Unused
+    char* username = NULL;
+    char* password = NULL;
+    const char* response_body;
+    int status_code = 500; // Default to internal server error
+
+    if (conn->request.body) {
+        username = get_query_param(conn->request.body, "username");
+        password = get_query_param(conn->request.body, "password");
+    }
+
+    if (username && password) {
+        // --- Check if user already exists ---
+        bool user_exists = false;
+        FILE* fp = fopen("www/data/users.csv", "r");
+        if (fp) {
+            char line[256];
+            char file_user[128];
+            while (fgets(line, sizeof(line), fp)) {
+                if (sscanf(line, "%127[^,],", file_user) == 1) {
+                    if (strcmp(file_user, username) == 0) {
+                        user_exists = true;
+                        break;
+                    }
+                }
+            }
+            fclose(fp);
+        }
+
+        if (user_exists) {
+            status_code = 409; // Conflict
+            response_body = "{\"status\":\"error\", \"message\":\"Username already exists.\"}";
+        } else {
+            // --- Append new user to CSV ---
+            fp = fopen("www/data/users.csv", "a");
+            if (fp) {
+                fprintf(fp, "\n%s,%s", username, password);
+                fclose(fp);
+                status_code = 201; // Created
+                response_body = "{\"status\":\"success\", \"message\":\"User registered successfully.\"}";
+            } else {
+                log_system(LOG_ERROR, "Could not open users.csv for appending.");
+                status_code = 500;
+                response_body = "{\"status\":\"error\", \"message\":\"Internal server error.\"}";
+            }
+        }
+    } else {
+        status_code = 400; // Bad Request
+        response_body = "{\"status\":\"error\", \"message\":\"Missing username or password.\"}";
+    }
+
+    log_access(conn->client_ip, conn->request.method, conn->request.raw_uri, status_code);
+
+    char header[512];
+    snprintf(header, sizeof(header),
+             "HTTP/1.1 %d %s\r\n"
+             "Connection: close\r\n"
+             "Content-Type: application/json\r\n"
+             "Content-Length: %ld\r\n\r\n",
+             status_code, 
+             status_code == 201 ? "Created" : (status_code == 409 ? "Conflict" : (status_code == 400 ? "Bad Request" : "Internal Server Error")),
+             strlen(response_body));
+    
+    queue_data_for_writing(conn, header, strlen(header), epollFd);
+    queue_data_for_writing(conn, response_body, strlen(response_body), epollFd);
+
+    free(username);
+    free(password);
+}
+
+
 void handle_api_upload_test(Connection* conn, ServerConfig* config, int epollFd) {
     (void)config; // config is unused in this handler
     log_system(LOG_INFO, "Upload Test API: Received request with Content-Length: %zu", conn->request.content_length);
@@ -124,46 +196,40 @@ void handle_api_upload_test(Connection* conn, ServerConfig* config, int epollFd)
     queue_data_for_writing(conn, response_body, strlen(response_body), epollFd);
 }
 
-
-void handle_api_search(Connection* conn, ServerConfig* config, int epollFd) {
-    (void)config;  // Mark as unused
-    (void)epollFd; // Mark as unused
-
-    char* filename_key = NULL;
-    char* search_key = NULL;
+// Helper function to process search logic, used by both GET and POST handlers
+static void process_search_and_respond(Connection* conn, int epollFd, const char* filename_key, const char* search_key) {
     char response_buffer[4096] = {0}; // Buffer for the search results
     char error_msg[256] = {0};
 
-    // SEARCH IS NOW A GET REQUEST, PARSE FROM QUERY STRING
-    if (conn->request.raw_query_string) {
-        filename_key = get_query_param(conn->request.raw_query_string, "key1");
-        search_key = get_query_param(conn->request.raw_query_string, "key2");
-    }
-
     if (filename_key && search_key) {
         char filepath[512];
-        // We assume search files are in a 'www/data' directory for security
-        snprintf(filepath, sizeof(filepath), "www/data/%s.txt", filename_key);
+        // Now reads from .csv files
+        snprintf(filepath, sizeof(filepath), "www/data/%s.csv", filename_key);
         
-        // Prevent path traversal
         if (strstr(filepath, "..") != NULL) {
              snprintf(error_msg, sizeof(error_msg), "Invalid filename.");
         } else {
             FILE* fp = fopen(filepath, "r");
             if (fp) {
                 char line[1024];
-                while(fgets(line, sizeof(line), fp)) {
-                    if (strstr(line, search_key)) {
-                        strncat(response_buffer, line, sizeof(response_buffer) - strlen(response_buffer) - 1);
+                // Skip header line
+                if (fgets(line, sizeof(line), fp)) {
+                    // Build a CSV response of matching lines
+                    while(fgets(line, sizeof(line), fp)) {
+                        if (strstr(line, search_key)) {
+                            // Append each matching line to the buffer.
+                            // Lines are already newline-terminated.
+                            strncat(response_buffer, line, sizeof(response_buffer) - strlen(response_buffer) - 1);
+                        }
                     }
                 }
                 fclose(fp);
             } else {
-                 snprintf(error_msg, sizeof(error_msg), "File not found: %s.txt", filename_key);
+                 snprintf(error_msg, sizeof(error_msg), "File not found: %s.csv", filename_key);
             }
         }
     } else {
-        snprintf(error_msg, sizeof(error_msg), "Missing key1 or key2.");
+        snprintf(error_msg, sizeof(error_msg), "Missing filename or keyword.");
     }
     
     const char* body = strlen(error_msg) > 0 ? error_msg : (strlen(response_buffer) > 0 ? response_buffer : "No results found.");
@@ -180,10 +246,43 @@ void handle_api_search(Connection* conn, ServerConfig* config, int epollFd) {
 
     queue_data_for_writing(conn, header, headerLen, epollFd);
     queue_data_for_writing(conn, body, strlen(body), epollFd);
+}
+
+void handle_api_search(Connection* conn, ServerConfig* config, int epollFd) {
+    (void)config;  // Mark as unused
+    
+    char* filename_key = NULL;
+    char* search_key = NULL;
+
+    // GET request: parse from query string
+    if (conn->request.raw_query_string) {
+        filename_key = get_query_param(conn->request.raw_query_string, "filename");
+        search_key = get_query_param(conn->request.raw_query_string, "keyword");
+    }
+
+    process_search_and_respond(conn, epollFd, filename_key, search_key);
 
     free(filename_key);
     free(search_key);
 } 
+
+void handle_api_search_post(Connection* conn, ServerConfig* config, int epollFd) {
+    (void)config; // Mark as unused
+
+    char* filename_key = NULL;
+    char* search_key = NULL;
+
+    // POST request: parse from request body
+    if (conn->request.body) {
+        filename_key = get_query_param(conn->request.body, "filename");
+        search_key = get_query_param(conn->request.body, "keyword");
+    }
+
+    process_search_and_respond(conn, epollFd, filename_key, search_key);
+
+    free(filename_key);
+    free(search_key);
+}
 
 void handle_api_me(Connection* conn, ServerConfig* config, int epollFd) {
     char* authed_user = authenticate_request(conn, config);
