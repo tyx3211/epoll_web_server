@@ -1,5 +1,6 @@
 .vscode/
 lib/
 bin/
+obj/
 .cache/
 compile_commands.json
