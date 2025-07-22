@@ -197,25 +197,30 @@ pre {
 }
 
 /* Table styles for results */
-#results-table {
+#results-table,
+#get-results-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 1rem;
 }
 
 #results-table th,
-#results-table td {
+#results-table td,
+#get-results-table th,
+#get-results-table td {
     border: 1px solid var(--border-color);
     padding: 0.75rem 1rem;
     text-align: left;
 }
 
-#results-table th {
+#results-table th,
+#get-results-table th {
     background-color: var(--background-color);
     font-weight: 600;
 }
 
-#results-table tbody tr:hover {
+#results-table tbody tr:hover,
+#get-results-table tbody tr:hover {
     background-color: #f8fafc; /* A very light blue on hover */
 }
 

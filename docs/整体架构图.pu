@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+left to right direction
+
+skinparam rectangle {
+    roundCorner 20
+}
+skinparam cloud {
+    roundCorner 20
+}
+
+cloud "用户浏览器" as Browser {
+    rectangle "前端应用\n(HTML/CSS/JS)" as Frontend
+}
+
+package "用户后端应用 (user_backend)" <<Node>> {
+rectangle "main.c\n(程序入口)" as Main
+rectangle "api.c\n(用户业务逻辑)" as Api
+}
+
+package "核心服务器库 (libwebserver.a)" <<Library>> {
+    rectangle "接口层\n(startServer, addRoute)" as ServerApi
+    rectangle "HTTP处理核心\n(Parser, Router)" as HttpCore
+    rectangle "事件循环 (Epoll)" as EpollLoop
+    
+    ' 强制库内组件垂直排列 (这部分不变)
+    ServerApi -[hidden]down-> HttpCore
+    HttpCore -[hidden]down-> EpollLoop
+}
+
+' 箭头关系 (这部分不变)
+Browser --> Main : HTTP 请求
+Main ..> ServerApi : 调用框架接口
+HttpCore ..> Api : 回调业务逻辑
+Main -> Api : (使用业务逻辑)
+@enduml

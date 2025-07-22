@@ -5,179 +5,6 @@ paginate: true
 footer: '高性能轻量级Web服务器 | 设计与实现'
 ---
 
-<style>
-/* 
-  您好！这是为您定制的 Marp 演示文稿样式。
-  我已经在这里添加了更丰富的样式，并用中文注释标明了所有您可以修改的地方。
-  您可以直接修改这里的数值来调整外观。
-*/
-
-/* --- 1. 全局与页面布局 --- */
-section {
-    /* 字体族: 优先使用系统UI字体，确保中英文显示效果。*/
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "ヒラギノ角ゴ ProN W3", Arial, "メイリオ", Meiryo, "Microsoft YaHei", "微软雅黑", sans-serif;
-    
-    /* 基础字号: 调整这个值可以改变整个页面的基础字体大小。*/
-    font-size: 24px;
-
-    /* 页面背景色: */
-    background-color: #ffffff; /* 纯白背景 */
-
-    /* 默认文字颜色: */
-    color: #333; /* 深灰色文字，比纯黑更柔和，阅读更舒适 */
-
-    /* 内容对齐: 全局左对齐，符合严谨的阅读习惯。*/
-    text-align: left;
-    
-    /* 内容垂直对齐: 从顶部开始，而不是垂直居中。*/
-    justify-content: start;
-    
-    /* 页面内边距: 页面内容与边缘的距离。第一个值是上下，第二个值是左右。*/
-    padding: 50px 70px;
-}
-
-/* --- 2. 标题样式 (H1, H2, H3) --- */
-h1, h2, h3, h4, h5, h6 {
-    /* 标题颜色: */
-    color: #003366; /* 标题使用深蓝色，显得专业 */
-    
-    /* 标题字重: 600是半粗体。*/
-    font-weight: 600;
-
-    /* 标题下方间距: */
-    margin-bottom: 0.6em; /* 标题和下方内容之间留出空隙 */
-}
-
-h1 {
-    /* H1 标题字号 */
-    font-size: 44px;
-    border-bottom: 2px solid #0055aa; /* 给主标题加一条下划线 */
-    padding-bottom: 0.2em; /* 下划线与文字的距离 */
-}
-h2 { font-size: 36px; }
-h3 { font-size: 28px; }
-
-/* --- 3. 文本与段落样式 --- */
-p {
-    /* 文本行距: 这是最重要的排版设置之一！调整这个值可以改变段落的行间距。*/
-    line-height: 1.8;
-    
-    /* 段落下方间距: */
-    margin-bottom: 1em;
-}
-
-/* --- 4. 列表样式 (无序/有序) --- */
-ul, ol {
-    /* 列表行距: */
-    line-height: 1.8;
-    
-    /* 列表左侧缩进: */
-    margin-left: 30px;
-}
-
-/* --- 5. 其他元素样式 (链接/引用/代码/表格/图片) --- */
-/* 链接样式 */
-a {
-    color: #0066cc; /* 链接颜色 */
-    text-decoration: none; /* 去掉下划线 */
-}
-a:hover {
-    text-decoration: underline; /* 鼠标悬浮时显示下划线 */
-}
-
-/* 引用块样式 */
-blockquote {
-    background: #f9f9f9; /* 浅灰色背景 */
-    border-left: 5px solid #ccc; /* 左侧的灰色竖线 */
-    margin: 1.5em 0;
-    padding: 0.5em 20px;
-    font-style: italic; /* 斜体 */
-}
-
-/* 代码样式 */
-/* 内联代码 `code` */
-code {
-    background-color: #eef;
-    padding: 0.2em 0.4em;
-    border-radius: 3px;
-    font-size: 0.9em;
-}
-/* 代码块 <pre><code> */
-pre code {
-    background-color: #f7f7f7;
-    border: 1px solid #ddd;
-    display: block;
-    padding: 1em;
-    border-radius: 5px;
-    font-size: 0.9em;
-    line-height: 1.6;
-}
-
-/* 表格样式 */
-table {
-    width: 100%;
-    border-collapse: collapse; /* 合并边框 */
-    margin-bottom: 1em;
-}
-th, td {
-    border: 1px solid #ddd; /* 单元格边框 */
-    padding: 8px 12px; /* 单元格内边距 */
-    text-align: left;
-}
-th {
-    background-color: #f2f2f2; /* 表头背景色 */
-    font-weight: bold;
-}
-
-/* --- 6. 页脚与页码 --- */
-footer {
-    position: absolute;
-    bottom: 25px; /* 距离底部的位置 */
-    left: 40px;
-    right: 40px;
-    font-size: 16px; /* 页脚字号 */
-    color: #777;
-}
-
-/* --- 7. 特殊页面样式：页眉 --- */
-/*
-  我们不再需要 .chapter 类和伪元素，
-  直接对 Marp 的原生 <header> 元素进行样式化。
-*/
-section > header {
-    /* 定位与样式 */
-    position: absolute; /* 绝对定位 */
-    top: 30px;          /* 距离顶部 30px */
-    left: 70px;         /* 距离左侧 70px (与页面内边距一致) */
-    right: auto;        /* 覆盖掉可能存在的右对齐 */
-    
-    /* 外观 */
-    font-size: 20px;    /* 字体大小 */
-    font-weight: bold;  /* 字体加粗 */
-    color: #555;        /* 页眉颜色 */
-    text-align: left;   /* 确保文字左对齐 */
-}
-
-/* --- 8. 特殊页面样式：章节页 --- */
-section.chapter {
-    /* 水平居中 */
-    text-align: center;
-    
-    /* 垂直居中 (利用flex布局的特性) */
-    justify-content: center;
-    
-    /* 可以给章节页一个独特的背景色以示区别 */
-    background-color: #f0f4f8; 
-}
-
-section.chapter h1 {
-    /* H1 标题字号 */
-    font-size: 60px;
-    border-bottom: none;
-}
-
-</style>
-
 <!-- _header: '' -->
 
 # 基于epoll的高性能轻量级Web服务器
@@ -188,12 +15,7 @@ section.chapter h1 {
 
 ---
 
-<!-- _class: chapter  -->
-# 第一部分：项目概述
-
----
-
-<!-- _header: '第一部分：项目概述' -->
+<!-- _header: '项目概述' -->
 
 ## 项目定位：一个框架，而非应用
 
@@ -205,38 +27,120 @@ section.chapter h1 {
 
 ---
 
-<!-- _header: '第一部分：项目概述' -->
+<!-- _header: '项目概述' -->
 
 ## 整体架构
 
 项目由**前端应用**、**用户后端**和**核心服务器库**三部分组成，关系如下：
 
-![整体架构图](./整体架构图.png)
+```plantuml
+@startuml
+!theme plain
+left to right direction
+
+skinparam rectangle {
+    roundCorner 20
+}
+skinparam cloud {
+    roundCorner 20
+}
+
+cloud "用户浏览器" as Browser {
+    rectangle "前端应用\n(HTML/CSS/JS)" as Frontend
+}
+
+package "用户后端应用 (user_backend)" <<Node>> {
+  rectangle "main.c\n(程序入口)" as Main
+  rectangle "api.c\n(用户业务逻辑)" as Api
+}
+
+package "核心服务器库 (libwebserver.a)" <<Library>> {
+    rectangle "接口层\n(startServer, addRoute)" as ServerApi
+    rectangle "HTTP处理核心\n(Parser, Router)" as HttpCore
+    rectangle "事件循环 (Epoll)" as EpollLoop
+    
+    ServerApi -[hidden]down-> HttpCore
+    HttpCore -[hidden]down-> EpollLoop
+}
+
+
+Browser -[hidden]right-> Main
+Main -[hidden]right-> ServerApi
+
+Browser --> Main : HTTP 请求
+Main ..> ServerApi : 调用框架接口
+HttpCore ..> Api : 回调业务逻辑
+Main -> Api : (使用业务逻辑)
+@enduml
+```
 
 ---
 
-<!-- _class: chapter  -->
-# 第二部分：核心库设计与实现
-
----
-
-<!-- _header: '第二部分：核心库设计与实现' -->
+<!-- _header: '核心库设计' -->
 
 ## 核心库内部依赖关系
 
 `libwebserver.a` 内部模块职责清晰，依赖关系明确，体现了高内聚、低耦合的设计思想。
 
-![核心库内部架构图](./核心库架构图.png)
+```plantuml
+@startuml
+!theme plain
+
+package "用户后端应用 (user_backend)" #LightBlue {
+    rectangle "main.c\n(程序入口)" as Main
+    rectangle "api.c\n(用户业务逻辑)" as Api
+}
+
+package "核心服务器库 (libwebserver.a)" {
+    rectangle "server.c\n(启动 & 事件循环)" as Server
+    rectangle "http.c\n(静态请求处理)" as Http
+    rectangle "router.c\n(路由分发)" as Router
+    rectangle "auth.c\n(认证逻辑)" as Auth
+    
+    package "公共依赖" {
+        rectangle "logger.c" as Logger
+        rectangle "config.c" as Config
+        rectangle "utils.c" as Utils
+    }
+}
+
+Main -down-> Router : 调用 router_add_route()
+Main --> Server   : 调用 startServer()
+Main --> Api      : (使用API函数指针)
+
+Server --> Http   : (静态请求)
+Server --> Router : 调用 router_find_handler() (动态请求)
+
+Router --> Api    : (调用用户注册的handler)
+Http   --> Utils
+Api    --> Auth
+
+Server --> Logger
+Server --> Config
+Http   --> Logger
+Router --> Logger
+Api    --> Logger
+Auth   --> Logger
+Utils  --> Logger
+
+Main -[hidden]down-> Server
+Server -[hidden]down-> Http
+Http -[hidden]down-> Router
+Router -[hidden]down-> Api
+Api -[hidden]down-> Auth
+@enduml
+```
 
 ---
 
-<!-- _header: '第二部分：核心库设计与实现' -->
+<!-- _header: '核心库设计' -->
 
 ## 项目目录结构
 
 规范的目录结构保证了项目代码的清晰度和可维护性。
 
 ```
+.
 ├── Web_Server_for_Learning/  # 核心服务器库
 │   ├── src/                  # 核心库源文件 (*.c)
 │   ├── include/              # 核心库头文件 (*.h)
@@ -254,13 +158,7 @@ section.chapter h1 {
 ```
 
 ---
-
-<!-- _class: chapter  -->
-# 第三部分：功能点展示
-
----
-
-<!-- _header: '第三部分：功能点展示' -->
+<!-- _header: '功能巡礼' -->
 
 ## 功能点展示顺序
 
@@ -274,7 +172,7 @@ section.chapter h1 {
 
 ---
 
-<!-- _header: '第三部分：功能点展示 | 1. 静态服务 & 错误响应' -->
+<!-- _header: '功能巡礼 | 1. 静态服务 & 错误响应' -->
 
 ### 1. 静态服务 & 错误响应 (概述)
 
@@ -287,11 +185,12 @@ section.chapter h1 {
 
 ---
 
-<!-- _header: '第三部分：功能点展示 | 1. 静态服务 & 错误响应' -->
+<!-- _header: '功能巡礼 | 1. 静态服务 & 错误响应' -->
 
 ### 核心逻辑
 
 `http.c`中的`handleStaticRequest`函数负责所有静态请求。
+
 首先，它将请求的URI与配置的文档根目录安全地拼接成物理文件路径。
 ```c
 // in http.c
@@ -313,7 +212,7 @@ if (fileFd == -1) {
 }
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 1. 静态服务 & 错误响应' -->
+<!-- _header: '功能巡礼 | 1. 静态服务 & 错误响应' -->
 
 ### 核心逻辑 (续)
 如果文件打开成功，则根据文件后缀名获取正确的MIME类型，并构建`200 OK`响应头。
@@ -339,7 +238,7 @@ while ((bytesRead = read(fileFd, buffer, sizeof(buffer))) > 0) {
 ```
 
 ---
-<!-- _header: '第三部分：功能点展示 | 1. 静态服务 & 错误响应' -->
+<!-- _header: '功能巡礼 | 1. 静态服务 & 错误响应' -->
 
 ### 运行结果展示
 
@@ -349,7 +248,7 @@ while ((bytesRead = read(fileFd, buffer, sizeof(buffer))) > 0) {
 - **右图**: 访问不存在的URL时，服务器返回的404错误页面。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
+<!-- _header: '功能巡礼 | 2. 配置与日志系统' -->
 
 ### 2. 配置与日志系统 (概述)
 
@@ -360,7 +259,7 @@ while ((bytesRead = read(fileFd, buffer, sizeof(buffer))) > 0) {
   - 启动服务器，并查看 `log/` 目录下生成的 `access.log` 和 `system.log`。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
+<!-- _header: '功能巡礼 | 2. 配置与日志系统' -->
 
 ### 核心逻辑：配置文件加载
 服务器启动时，`config.c`中的`loadConfig`函数会逐行解析配置文件。
@@ -382,10 +281,10 @@ while (fgets(line, sizeof(line), fp)) {
 }
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
+<!-- _header: '功能巡礼 | 2. 配置与日志系统' -->
 
 ### 亮点：启动时日志缓冲
-在配置文件加载完成前，日志设置可能尚未指定完全，日志系统如何工作？这是一个“鸡生蛋”问题。
+在配置文件加载完成前，日志系统如何工作？这是一个“鸡生蛋”问题。
 我们设计了巧妙的日志缓冲机制：在日志系统未初始化时，`log_system`会将日志消息暂存入内存缓冲区。
 ```c
 // in logger.c -> log_system()
@@ -400,11 +299,7 @@ if (!L.is_initialized) {
     return;
 }
 ```
----
-<!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
-
-### 亮点：启动时日志缓冲 (续)
-当`logger_init`根据配置完成初始化后，它会立即将缓冲区内容“回放”至指定日志文件，并清空缓冲区，确保所有日志都按最终配置输出。
+当`logger_init`根据配置完成初始化后，它会立即“回放”并清空缓冲区，确保所有日志都按最终配置输出。
 ```c
 // in logger.c -> logger_init()
 L.is_initialized = true;
@@ -412,7 +307,7 @@ L.is_initialized = true;
 flush_and_free_buffer();
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
+<!-- _header: '功能巡礼 | 2. 配置与日志系统' -->
 
 ### 运行结果展示
 
@@ -423,7 +318,7 @@ flush_and_free_buffer();
 - **左下**: `access.log`文件，记录了每一条HTTP请求的摘要。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 3. 动态服务 (GET/POST)' -->
+<!-- _header: '功能巡礼 | 3. 动态服务 (GET/POST)' -->
 
 ### 3. 动态服务 (GET/POST) (概述)
 - **功能**: 服务器不仅能提供静态文件，还能处理动态API请求。我们通过一个“学生数据查询”功能，来演示服务器如何通过路由系统，将`GET`和`POST`请求分发给不同的业务逻辑。
@@ -434,7 +329,7 @@ flush_and_free_buffer();
   - 服务器均能正确响应，并将结果动态渲染在页面表格中。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 3. 动态服务 (GET/POST)' -->
+<!-- _header: '功能巡礼 | 3. 动态服务 (GET/POST)' -->
 
 ### 核心逻辑：路由注册与参数解析
 在`main.c`中，我们将同一路径`/api/search`分别注册给GET和POST方法，并绑定到不同的处理函数。
@@ -456,7 +351,7 @@ filename_key = get_query_param(conn->request.body, "filename");
 search_key = get_query_param(conn->request.body, "keyword");
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 3. 动态服务 (GET/POST)' -->
+<!-- _header: '功能巡礼 | 3. 动态服务 (GET/POST)' -->
 
 ### 运行结果展示
 
@@ -465,7 +360,7 @@ search_key = get_query_param(conn->request.body, "keyword");
 - **截图内容**: 展示`search.html`页面，上面是GET表单，下面是POST表单，最下方是查询结果的表格，表格中显示了从.csv文件中查找到的学生信息。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
+<!-- _header: '功能巡礼 | 4. 安全认证' -->
 
 ### 4. 安全认证 (概述)
 - **功能**: 作为一个功能完善的框架，我们提供了完整的安全认证流程。用户可以注册新账号，登录后获取`JWT (JSON Web Token)`，并在后续请求中携带此Token以访问受保护的资源。
@@ -476,7 +371,7 @@ search_key = get_query_param(conn->request.body, "keyword");
   - 使用新用户登录，登录成功后自动跳转到“我的”页面，并显示欢迎信息。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
+<!-- _header: '功能巡礼 | 4. 安全认证' -->
 
 ### 核心逻辑：用户注册与登录
 用户注册时，`handle_api_register`会检查用户名是否已存在，若不存在，则将新用户信息追加到`users.csv`文件。
@@ -501,7 +396,7 @@ if (credentials_valid) {
 ```
 
 ---
-<!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
+<!-- _header: '功能巡礼 | 4. 安全认证' -->
 
 ### 核心逻辑：Token验证
 访问受保护接口时，`auth.c`中的`authenticate_request`函数会解析`Authorization`请求头，并使用`l8w8jwt`库来验证Token的签名和有效期。
@@ -522,7 +417,7 @@ if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
 }
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
+<!-- _header: '功能巡礼 | 4. 安全认证' -->
 
 ### 运行结果展示
 `[请在此处准备并插入 注册、登录、访问个人中心 的系列连贯截图]`
@@ -532,7 +427,7 @@ if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
 - **图三**: `me.html`页面，成功显示“欢迎, [用户名]!”，证明Token验证通过。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
+<!-- _header: '功能巡礼 | 5. 核心服务逻辑 (Epoll)' -->
 
 ### 5. 核心服务逻辑 (Epoll) (概述)
 - **功能**: 这是整个服务器高性能的基石。我们采用Linux平台下最高效的I/O多路复用技术`epoll`，并结合**非阻塞I/O**，构建了经典的**单线程Reactor并发模型**。
@@ -542,7 +437,7 @@ if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
   - **事件驱动**: 只有当I/O事件实际就绪时，CPU才介入处理，极大提升了资源利用率。
 
 ---
-<!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
+<!-- _header: '功能巡礼 | 5. 核心服务逻辑 (Epoll)' -->
 
 ### 核心逻辑：主事件循环
 服务器的核心是`server.c`中的一个无限循环，它阻塞在`epoll_wait`，等待事件发生。
@@ -568,20 +463,62 @@ while (1) {
 }
 ```
 ---
-<!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
+<!-- _header: '功能巡礼 | 5. 核心服务逻辑 (Epoll)' -->
 
-### 核心逻辑：事件处理流程图（服务器从接收连接到处理读写事件的完整流程）
+### 核心逻辑：事件处理流程图
+下图完整展示了服务器从接收连接到处理读写事件的完整流程。
+```plantuml
+@startuml
+!theme plain
+start
+:创建 listenFd 并绑定端口;
+:创建 epollFd;
+:将 listenFd 注册到 epoll;
 
-<img src="./事件处理流程图.png" alt="事件处理流程图" style="width: 80%; height: 80%;">
+while (主循环)
+  :epoll_wait(阻塞等待事件);
+  if (有新连接?) then (yes)
+    :accept() 获取 connFd;
+    :设置 connFd 为非阻塞;
+    :为新连接分配 Connection 结构;
+    :将 connFd 注册到 epoll (监听读事件);
+  else (no)
+    if (socket可读?) then (yes)
+      -> YES;
+      :调用 handleConnection();
+      note right
+        1. 循环 read 数据到 conn->read_buf
+        2. **调用增量解析器**
+        3. 若解析完成，则调用业务逻辑
+           (静态 or 动态API)
+        4. 准备响应数据到 conn->write_buf
+        5. 修改epoll监听为“可写”
+      end note
+    else (no)
+      if (socket可写?) then (yes)
+        :调用 handleWrite();
+        note right
+         1. write(conn->write_buf)
+         2. 若全部写完，关闭连接
+        end note
+      else (no)
+        :处理错误/关闭事件;
+      endif
+    endif
+  endif
+endwhile
+
+stop
+@enduml
+```
 
 ---
-<!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
+<!-- _header: '功能巡礼 | 5. 核心服务逻辑 (Epoll)' -->
 
 ### 核心算法：增量式HTTP解析
 - **挑战**: TCP是面向字节流的协议，一个HTTP请求可能被分割在多个TCP包中（半包），或多个请求挤在一个包里（粘包）。如何准确识别请求边界？
 
 - **解决方案**: **基于状态机的增量式解析算法**。
-  - **状态机流程**:`PARSE_STATE_REQ_LINE` → `PARSE_STATE_HEADERS` → `PARSE_STATE_BODY` → `PARSE_STATE_COMPLETE`
   - 为每个连接维护一个独立的读缓冲区 (`read_buf`) 和解析状态 (`parsing_state`)。
   - `epoll` 每次触发读事件，都从socket `read` 数据追加到缓冲区。
   - 解析器从上次结束的位置 (`parsed_offset`) 继续扫描，根据当前状态（如 `PARSE_STATE_REQ_LINE`）寻找对应的分隔符（`\r\n`）。
@@ -591,12 +528,7 @@ while (1) {
 
 ---
 
-<!-- _class: chapter  -->
-# 第四部分：总结与展望
-
----
-
-<!-- _header: '第四部分：总结与展望' -->
+<!-- _header: '总结与展望' -->
 
 ## 项目总结
 
@@ -606,7 +538,7 @@ while (1) {
 
 ---
 
-<!-- _header: '第四部分：总结与展望' -->
+<!-- _header: '总结与展望' -->
 
 ## 不足与展望
 

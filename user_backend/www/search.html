@@ -23,6 +23,22 @@
         </form>
     </div>
 
+    <div class="results-container">
+        <h3>查询结果:</h3>
+        <p id="get-status-message">请发起查询...</p>
+        <table id="get-results-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>学号</th>
+                    <th>姓名</th>
+                    <th>性别</th>
+                </tr>
+            </thead>
+            <tbody id="get-results-body">
+            </tbody>
+        </table>
+    </div>
+
     <hr class="divider">
 
     <div class="form-container">
@@ -66,6 +82,9 @@
         const statusMessage = document.getElementById('status-message');
         const resultsTable = document.getElementById('results-table');
         const resultsBody = document.getElementById('results-body');
+        const getStatusMessage = document.getElementById('get-status-message');
+        const getResultsTable = document.getElementById('get-results-table');
+        const getResultsBody = document.getElementById('get-results-body');
 
         // Function to render results into the table
         function renderResults(data) {
@@ -91,6 +110,29 @@
             });
         }
 
+        function renderGetResults(data) {
+            getResultsBody.innerHTML = ''; // Clear previous results
+            if (data.trim() === 'No results found.' || data.trim() === '') {
+                getStatusMessage.textContent = '未找到匹配的学生数据。';
+                getResultsTable.style.display = 'none';
+                getStatusMessage.style.display = 'block';
+                return;
+            }
+            
+            getStatusMessage.style.display = 'none';
+            getResultsTable.style.display = 'table';
+
+            const rows = data.trim().split('\n');
+            rows.forEach(row => {
+                const columns = row.split(','); // Split by comma
+                if (columns.length >= 3) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${columns[0]}</td><td>${columns[1]}</td><td>${columns[2]}</td>`;
+                    getResultsBody.appendChild(tr);
+                }
+            });
+        }
+
         // Handle GET form submission
         getForm.addEventListener('submit', function(event) {
             event.preventDefault();
@@ -105,7 +147,7 @@
 
             fetch(url)
                 .then(response => response.text())
-                .then(renderResults)
+                .then(renderGetResults)
                 .catch(error => {
                     statusMessage.textContent = '查询出错: ' + error;
                 });

@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+left to right direction
+
+skinparam rectangle {
+    roundCorner 10
+}
+
+package "用户后端应用 (user_backend)" #LightBlue {
+    rectangle "main.c\n(程序入口)" as Main
+    rectangle "api.c\n(用户业务逻辑)" as Api
+}
+
+package "核心服务器库 (libwebserver.a)" {
+    rectangle "server.c\n(启动 & 事件循环)" as Server
+    rectangle "http.c\n(静态请求处理)" as Http
+    rectangle "router.c\n(路由分发)" as Router
+    rectangle "auth.c\n(认证逻辑)" as Auth
+    
+    package "公共依赖" {
+        rectangle "logger.c" as Logger
+        rectangle "config.c" as Config
+        rectangle "utils.c" as Utils
+    }
+}
+
+' 核心调用流程 (自上而下)
+Main --> Server   : 调用 startServer()
+Main --> Router   : 调用 router_add_route()
+Main --> Api      : (使用API函数指针)
+
+Server --> Http   : (静态请求)
+Server --> Router : 调用 router_find_handler() (动态请求)
+
+Server --> Api    : (调用用户注册的handler)
+Http   --> Utils
+Api    --> Auth
+
+' 隐藏箭头用于布局
+' Main -[hidden]down-> Server
+' Server -[hidden]down-> Http
+' Http -[hidden]down-> Router
+' Router -[hidden]down-> Api
+' Api -[hidden]down-> Auth
+@enduml

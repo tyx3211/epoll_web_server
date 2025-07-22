@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+start
+:创建 listenFd 并绑定端口;
+:创建 epollFd;
+:将 listenFd 注册到 epoll;
+
+while (主循环)
+    :epoll_wait(阻塞等待事件);
+    if (有新连接?) then (yes)
+    :accept() 获取 connFd;
+    :设置 connFd 为非阻塞;
+    :为新连接分配 Connection 结构;
+    :将 connFd 注册到 epoll (监听读事件);
+    else (no)
+    if (socket可读?) then (yes)
+        -> YES;
+        :调用 handleConnection();
+        note right
+        1. 循环 read 数据到 conn->read_buf
+        2. **调用增量解析器**
+        3. 若解析完成，则调用业务逻辑
+            (静态 or 动态API)
+        4. 准备响应数据到 conn->write_buf
+        5. 修改epoll监听为“可写”
+        end note
+    else (no)
+        if (socket可写?) then (yes)
+        :调用 handleWrite();
+        note right
+            1. write(conn->write_buf)
+            2. 若全部写完，关闭连接
+        end note
+        else (no)
+        :处理错误/关闭事件;
+        endif
+    endif
+    endif
+endwhile
+
+stop
+@enduml
