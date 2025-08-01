@@ -176,6 +176,38 @@ section.chapter h1 {
     border-bottom: none;
 }
 
+/* --- 9. 图片题注样式 --- */
+figure {
+    /* 让整个figure块在页面中居中，并且没有多余边距 */
+    margin: 1em auto;
+    padding: 0;
+    text-align: center;
+}
+
+figcaption {
+    /* 题注样式 */
+    margin-top: 0.5em;       /* 题注与图片之间的距离 */
+    font-size: 0.8em;        /* 字号比正文小一点 */
+    color: #555;             /* 使用柔和的灰色 */
+    font-style: italic;      /* 斜体，有说明的感觉 */
+}
+
+/* --- 10. 左右分栏布局样式 --- */
+.columns {
+    display: flex;
+    gap: 20px; /* 两栏之间的间距 */
+    align-items: flex-start; /* 顶部对齐 */
+    width: 100%;
+}
+.col {
+    flex: 1; /* 各栏等宽 */
+}
+.col img {
+    width: 100%; /* 图片宽度自动适应栏宽 */
+    border: 1px solid #ddd; /* 给图片加一个浅色边框 */
+    border-radius: 4px;
+}
+
 </style>
 
 <!-- _header: '' -->
@@ -184,7 +216,7 @@ section.chapter h1 {
 ## 设计与实现
 
 - **汇报人：谭宇轩**
-- **日期：2025年7月22日**
+- **日期：2025年7月23日**
 
 ---
 
@@ -201,7 +233,7 @@ section.chapter h1 {
 
 - **核心价值**: 提供稳定可靠的HTTP处理核心，将开发者从复杂的底层I/O与协议解析中解放出来。
 - **设计哲学**: 给予上层业务开发者最大的**自由度**去实现自定义逻辑。
-- **本次展示**: 为演示框架能力，我们基于此框架构建了一个**示例后端应用** (`user_backend`) 和配套的前端界面。
+- **本次展示**: 为演示框架能力，本项目基于此框架构建了一个**示例后端应用** (`user_backend`) 和配套的前端界面。
 
 ---
 
@@ -211,7 +243,7 @@ section.chapter h1 {
 
 项目由**前端应用**、**用户后端**和**核心服务器库**三部分组成，关系如下：
 
-![整体架构图](./整体架构图.png)
+![整体架构图](./images/整体架构图.png "width:95%")
 
 ---
 
@@ -226,7 +258,7 @@ section.chapter h1 {
 
 `libwebserver.a` 内部模块职责清晰，依赖关系明确，体现了高内聚、低耦合的设计思想。
 
-![核心库内部架构图](./核心库架构图.png)
+![核心库内部架构图](./images/核心库架构图.png "width:95%")
 
 ---
 
@@ -264,7 +296,7 @@ section.chapter h1 {
 
 ## 功能点展示顺序
 
-接下来，我们将按照以下顺序，结合代码和现场演示，逐一介绍服务器的核心功能：
+接下来，我将按照以下顺序，结合代码和现场演示，逐一介绍服务器的核心功能：
 
 1.  **静态服务** (Index/博客) **& 错误响应**
 2.  **配置系统 & 日志系统**
@@ -343,10 +375,20 @@ while ((bytesRead = read(fileFd, buffer, sizeof(buffer))) > 0) {
 
 ### 运行结果展示
 
-`[请在此处准备并插入 index.html 和 404页面的运行截图]`
+<div class="columns">
+<div class="col">
 
-- **左图**: 成功加载的博客首页，包含文字、图片和CSS样式。
-- **右图**: 访问不存在的URL时，服务器返回的404错误页面。
+**成功加载博客首页**
+![成功加载的博客首页](./images/3.1.1.png)
+
+</div>
+<div class="col">
+
+**返回404错误页面**
+![返回404错误页面](./images/3.1.2.png)
+
+</div>
+</div>
 
 ---
 <!-- _header: '第三部分：功能点展示 | 2. 配置与日志系统' -->
@@ -386,7 +428,7 @@ while (fgets(line, sizeof(line), fp)) {
 
 ### 亮点：启动时日志缓冲
 在配置文件加载完成前，日志设置可能尚未指定完全，日志系统如何工作？这是一个“鸡生蛋”问题。
-我们设计了巧妙的日志缓冲机制：在日志系统未初始化时，`log_system`会将日志消息暂存入内存缓冲区。
+本项目设计了巧妙的日志缓冲机制：在日志系统未初始化时，`log_system`会将日志消息暂存入内存缓冲区。
 ```c
 // in logger.c -> log_system()
 if (!L.is_initialized) {
@@ -416,17 +458,24 @@ flush_and_free_buffer();
 
 ### 运行结果展示
 
-`[请在此处准备并插入 server.conf 和 log/目录下两个日志文件的截图]`
-
-- **左上**: `server.conf`文件，展示了端口、日志级别等配置。
-- **右侧**: `system.log`文件，展示了服务器启动、模块加载等`DEBUG`级别的详细信息。
-- **左下**: `access.log`文件，记录了每一条HTTP请求的摘要。
+<div class="columns">
+<div class="col" style="flex: 0.8;">
+<b>server.conf</b>
+<img src="./images/3.2.1.png" alt="server.conf">
+</div>
+<div class="col">
+<b>system.log (部分)</b>
+<img src="./images/3.2.2.png" alt="system.log">
+<b>access.log (部分)</b>
+<img src="./images/3.2.3.png" alt="access.log">
+</div>
+</div>
 
 ---
 <!-- _header: '第三部分：功能点展示 | 3. 动态服务 (GET/POST)' -->
 
 ### 3. 动态服务 (GET/POST) (概述)
-- **功能**: 服务器不仅能提供静态文件，还能处理动态API请求。我们通过一个“学生数据查询”功能，来演示服务器如何通过路由系统，将`GET`和`POST`请求分发给不同的业务逻辑。
+- **功能**: 服务器不仅能提供静态文件，还能处理动态API请求。我将通过一个“学生数据查询”功能，来演示服务器如何通过路由系统，将`GET`和`POST`请求分发给不同的业务逻辑。
 
 - **演示内容**:
   - 打开学生查询页面。
@@ -437,7 +486,7 @@ flush_and_free_buffer();
 <!-- _header: '第三部分：功能点展示 | 3. 动态服务 (GET/POST)' -->
 
 ### 核心逻辑：路由注册与参数解析
-在`main.c`中，我们将同一路径`/api/search`分别注册给GET和POST方法，并绑定到不同的处理函数。
+在`main.c`中，本项目将同一路径`/api/search`分别注册给GET和POST方法，并绑定到不同的处理函数。
 ```c
 // in user_backend/src/main.c
 router_add_route("GET", "/api/search", handle_api_search);
@@ -460,15 +509,26 @@ search_key = get_query_param(conn->request.body, "keyword");
 
 ### 运行结果展示
 
-`[请在此处准备并插入 search.html 演示GET和POST查询成功的截图]`
+<div class="columns">
+<div class="col">
 
-- **截图内容**: 展示`search.html`页面，上面是GET表单，下面是POST表单，最下方是查询结果的表格，表格中显示了从.csv文件中查找到的学生信息。
+**GET请求查询**
+![GET请求查询](./images/3.3.1.png)
+
+</div>
+<div class="col">
+
+**POST请求查询**
+![POST请求查询](./images/3.3.2.png)
+
+</div>
+</div>
 
 ---
 <!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
 
 ### 4. 安全认证 (概述)
-- **功能**: 作为一个功能完善的框架，我们提供了完整的安全认证流程。用户可以注册新账号，登录后获取`JWT (JSON Web Token)`，并在后续请求中携带此Token以访问受保护的资源。
+- **功能**: 作为一个功能完善的框架，本项目提供了完整的安全认证流程。用户可以注册新账号，登录后获取`JWT (JSON Web Token)`，并在后续请求中携带此Token以访问受保护的资源。
 
 - **演示内容**:
   - (未登录)直接访问“我的”页面，被自动跳转到登录页。
@@ -525,17 +585,33 @@ if (decode_result == L8W8JWT_SUCCESS && validation_result == L8W8JWT_VALID) {
 <!-- _header: '第三部分：功能点展示 | 4. 安全认证' -->
 
 ### 运行结果展示
-`[请在此处准备并插入 注册、登录、访问个人中心 的系列连贯截图]`
 
-- **图一**: `register.html`页面，显示注册成功提示。
-- **图二**: `login.html`页面，输入用户名密码，点击登录。
-- **图三**: `me.html`页面，成功显示“欢迎, [用户名]!”，证明Token验证通过。
+<div class="columns">
+<div class="col">
+
+**1. 注册新用户**
+![注册新用户](./images/3.4.1.png)
+
+</div>
+<div class="col">
+
+**2. 登录成功**
+![登录成功](./images/3.4.2.png)
+
+</div>
+<div class="col">
+
+**3. 鉴权访问**
+![鉴权访问](./images/3.4.3.png)
+
+</div>
+</div>
 
 ---
 <!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
 
 ### 5. 核心服务逻辑 (Epoll) (概述)
-- **功能**: 这是整个服务器高性能的基石。我们采用Linux平台下最高效的I/O多路复用技术`epoll`，并结合**非阻塞I/O**，构建了经典的**单线程Reactor并发模型**。
+- **功能**: 这是整个服务器高性能的基石。本项目采用Linux平台下最高效的I/O多路复用技术`epoll`，并结合**非阻塞I/O**，构建了经典的**单线程Reactor并发模型**。
 
 - **核心优势**:
   - **高并发**: 单线程即可管理海量客户端连接，避免了多线程上下文切换的巨大开销。
@@ -572,7 +648,7 @@ while (1) {
 
 ### 核心逻辑：事件处理流程图（服务器从接收连接到处理读写事件的完整流程）
 
-<img src="./事件处理流程图.png" alt="事件处理流程图" style="width: 80%; height: 80%;">
+<img src="./images/事件处理流程图.png" alt="事件处理流程图" style="width: 80%; height: 80%;">
 
 ---
 <!-- _header: '第三部分：功能点展示 | 5. 核心服务逻辑 (Epoll)' -->
@@ -620,5 +696,5 @@ while (1) {
 
 <!-- _header: '' -->
 
-# 感谢聆听
+# 谢谢大家！
 ## Q & A
