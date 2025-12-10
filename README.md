@@ -120,6 +120,10 @@ make rebuild
 *   🏗️ **[架构与设计 (Architecture)](./docs/ARCHITECTURE_AND_DESIGN.md)**  
     如果想深入理解 Epoll 循环、状态机原理、或者想学习如何设计一个 C 语言库，请阅读这篇源码级剖析。
 
+*   **[旧版本概述.md](./docs/旧版本概述.md)**
+    这篇旧版本概述，写于请求结构体自动解码、Response结构体设计、优雅Response函数实现、yyjson集成之前。但通过阅读它，依旧可以了解到项目的具体架构和一些核心的实现思路。
+
+
 ---
 
 ## 📸 运行截图
