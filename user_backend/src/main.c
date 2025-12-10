@@ -20,6 +20,13 @@ int main(int argc, char* argv[]) {
     router_add_route("POST", "/api/search", handle_api_search_post);
     router_add_route("GET", "/api/me", handle_api_me);
     router_add_route("POST", "/api/upload_test", handle_api_upload_test);
+    router_add_route("POST", "/api/json_echo", handle_api_json_echo); // Phase 3 Demo
+    
+    // Demo APIs for frontend showcase
+    router_add_route("GET", "/api/system_info", handle_api_system_info);
+    router_add_route("POST", "/api/calc", handle_api_calc);
+    router_add_route("GET", "/api/time", handle_api_time);
+    
     printf("Registered API routes.\n");
 
     startServer(config_path);

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epoll Server Core - API 演示</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-blue: #38bdf8;
+            --accent-green: #4ade80;
+            --accent-purple: #a78bfa;
+            --accent-orange: #fb923c;
+            --border: #475569;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .badge-container {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-blue { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); border: 1px solid var(--accent-blue); }
+        .badge-green { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); border: 1px solid var(--accent-green); }
+        .badge-purple { background: rgba(167, 139, 250, 0.2); color: var(--accent-purple); border: 1px solid var(--accent-purple); }
+
+        /* Nav */
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .nav a:hover {
+            color: var(--accent-blue);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        /* Demo Grid */
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .demo-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .demo-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .demo-card h3 .phase {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .phase-1 { background: var(--accent-blue); color: #000; }
+        .phase-2 { background: var(--accent-green); color: #000; }
+        .phase-3 { background: var(--accent-purple); color: #000; }
+
+        .demo-card p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        /* Response Area */
+        .response-area {
+            margin-top: 1rem;
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 0.85rem;
+            overflow-x: auto;
+            border: 1px solid #30363d;
+        }
+
+        .response-area pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .response-area .status {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .status-success { background: rgba(74, 222, 128, 0.2); color: var(--accent-green); }
+        .status-error { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .status-pending { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+
+        /* JSON Syntax Highlighting */
+        .json-key { color: #7dd3fc; }
+        .json-string { color: #86efac; }
+        .json-number { color: #fbbf24; }
+        .json-boolean { color: #c4b5fd; }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 2rem;
+            color: var(--text-secondary);
+            border-top: 1px solid var(--border);
+        }
+
+        .footer a {
+            color: var(--accent-blue);
+            text-decoration: none;
+        }
+
+        /* System Info */
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .info-item {
+            background: var(--bg-input);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .info-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+        }
+
+        .info-item .label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>⚡ Epoll Server Core</h1>
+            <p>高性能 C 语言 Web 服务器框架 API 演示</p>
+            <div class="badge-container">
+                <span class="badge badge-blue">Phase 1: Response API</span>
+                <span class="badge badge-green">Phase 2: Param Parsing</span>
+                <span class="badge badge-purple">Phase 3: JSON Support</span>
+            </div>
+        </header>
+
+        <nav class="nav">
+            <a href="index.html">🏠 首页</a>
+            <a href="search.html">🔍 查询演示</a>
+            <a href="login.html">🔐 登录</a>
+            <a href="register.html">📝 注册</a>
+            <a href="me.html">👤 我的</a>
+        </nav>
+
+        <div class="demo-grid">
+            <!-- System Info -->
+            <div class="demo-card" style="grid-column: 1 / -1;">
+                <h3>📊 服务器信息 <span class="phase phase-1">实时</span></h3>
+                <p>获取服务器当前状态和框架版本信息</p>
+                <button onclick="fetchSystemInfo()">获取服务器信息</button>
+                <div id="system-info-result" class="response-area" style="display: none;">
+                    <div class="system-info" id="system-info-grid"></div>
+                </div>
+            </div>
+
+            <!-- JSON Echo Demo -->
+            <div class="demo-card">
+                <h3>🔄 JSON Echo <span class="phase phase-3">Phase 3</span></h3>
+                <p>发送 JSON 请求，服务器用 yyjson 解析并响应</p>
+                <div class="form-group">
+                    <label>请求 JSON</label>
+                    <textarea id="json-echo-input">{
+  "name": "张三",
+  "age": 25,
+  "skills": ["C", "Linux", "Epoll"]
+}</textarea>
+                </div>
+                <button onclick="testJsonEcho()">发送请求</button>
+                <div id="json-echo-result" class="response-area" style="display: none;"></div>
+            </div>
+
+            <!-- Param Parsing Demo -->
+            <div class="demo-card">
+                <h3>📝 参数解析 <span class="phase phase-2">Phase 2</span></h3>
+                <p>测试 GET/POST 参数自动解析功能</p>
+                <div class="form-group">
+                    <label>文件名</label>
+                    <input type="text" id="param-filename" value="2011" placeholder="例如: 2011">
+                </div>
+                <div class="form-group">
+                    <label>关键词</label>
+                    <input type="text" id="param-keyword" value="zhang" placeholder="例如: zhang">
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="testParamGet()" style="flex: 1;">GET 请求</button>
+                    <button onclick="testParamPost()" style="flex: 1;">POST 请求</button>
+                </div>
+                <div id="param-result" class="response-area" style="display: none;"></div>
+            </div>
+
+            <!-- User API Demo -->
+            <div class="demo-card">
+                <h3>👤 用户 API <span class="phase phase-2">Phase 2</span></h3>
+                <p>测试用户注册和登录（JWT 认证）</p>
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="user-username" value="demouser" placeholder="用户名">
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="user-password" value="demo123" placeholder="密码">
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="testRegister()" style="flex: 1;">注册</button>
+                    <button onclick="testLogin()" style="flex: 1;">登录</button>
+                </div>
+                <div id="user-result" class="response-area" style="display: none;"></div>
+            </div>
+
+            <!-- Calculator API -->
+            <div class="demo-card">
+                <h3>🧮 计算器 API <span class="phase phase-3">Phase 3</span></h3>
+                <p>用 JSON 发送计算请求，服务器返回结果</p>
+                <div style="display: flex; gap: 0.5rem;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>数字 A</label>
+                        <input type="number" id="calc-a" value="10">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>运算</label>
+                        <select id="calc-op">
+                            <option value="add">+</option>
+                            <option value="sub">-</option>
+                            <option value="mul">×</option>
+                            <option value="div">÷</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>数字 B</label>
+                        <input type="number" id="calc-b" value="5">
+                    </div>
+                </div>
+                <button onclick="testCalculator()">计算</button>
+                <div id="calc-result" class="response-area" style="display: none;"></div>
+            </div>
+
+            <!-- Time API -->
+            <div class="demo-card">
+                <h3>🕐 时间 API <span class="phase phase-1">Phase 1</span></h3>
+                <p>获取服务器当前时间（展示响应封装）</p>
+                <button onclick="testTime()">获取时间</button>
+                <div id="time-result" class="response-area" style="display: none;"></div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Epoll Server Core © 2024 | 基于 Linux Epoll 的高性能 Web 服务器框架</p>
+            <p><a href="https://github.com/tyx3211/epoll_web_server" target="_blank">GitHub</a></p>
+        </footer>
+    </div>
+
+    <script>
+        // Helper: Format JSON with syntax highlighting
+        function formatJson(obj) {
+            const json = JSON.stringify(obj, null, 2);
+            return json
+                .replace(/"([^"]+)":/g, '<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]*)"/g, ': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+)/g, ': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g, ': <span class="json-boolean">$1</span>');
+        }
+
+        // Helper: Show result
+        function showResult(elementId, status, data) {
+            const el = document.getElementById(elementId);
+            el.style.display = 'block';
+            const statusClass = status >= 200 && status < 300 ? 'status-success' : 'status-error';
+            el.innerHTML = `<span class="status ${statusClass}">HTTP ${status}</span><pre>${formatJson(data)}</pre>`;
+        }
+
+        // Test: System Info
+        async function fetchSystemInfo() {
+            try {
+                const res = await fetch('/api/system_info');
+                const data = await res.json();
+                const el = document.getElementById('system-info-result');
+                el.style.display = 'block';
+                
+                const grid = document.getElementById('system-info-grid');
+                grid.innerHTML = `
+                    <div class="info-item"><div class="value">${data.version || '1.0.0'}</div><div class="label">框架版本</div></div>
+                    <div class="info-item"><div class="value">${data.uptime || 'N/A'}</div><div class="label">运行时间</div></div>
+                    <div class="info-item"><div class="value">${data.phase || '3'}</div><div class="label">当前 Phase</div></div>
+                `;
+            } catch (e) {
+                showResult('system-info-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: JSON Echo
+        async function testJsonEcho() {
+            try {
+                const input = document.getElementById('json-echo-input').value;
+                const res = await fetch('/api/json_echo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: input
+                });
+                const data = await res.json();
+                showResult('json-echo-result', res.status, data);
+            } catch (e) {
+                showResult('json-echo-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Param GET
+        async function testParamGet() {
+            const filename = document.getElementById('param-filename').value;
+            const keyword = document.getElementById('param-keyword').value;
+            try {
+                const res = await fetch(`/api/search?filename=${encodeURIComponent(filename)}&keyword=${encodeURIComponent(keyword)}`);
+                const text = await res.text();
+                document.getElementById('param-result').style.display = 'block';
+                document.getElementById('param-result').innerHTML = `<span class="status status-success">HTTP ${res.status} (GET)</span><pre>${text || '(空结果)'}</pre>`;
+            } catch (e) {
+                showResult('param-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Param POST
+        async function testParamPost() {
+            const filename = document.getElementById('param-filename').value;
+            const keyword = document.getElementById('param-keyword').value;
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `filename=${encodeURIComponent(filename)}&keyword=${encodeURIComponent(keyword)}`
+                });
+                const text = await res.text();
+                document.getElementById('param-result').style.display = 'block';
+                document.getElementById('param-result').innerHTML = `<span class="status status-success">HTTP ${res.status} (POST)</span><pre>${text || '(空结果)'}</pre>`;
+            } catch (e) {
+                showResult('param-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Register
+        async function testRegister() {
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                const data = await res.json();
+                showResult('user-result', res.status, data);
+            } catch (e) {
+                showResult('user-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Login
+        async function testLogin() {
+            const username = document.getElementById('user-username').value;
+            const password = document.getElementById('user-password').value;
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+                });
+                const data = await res.json();
+                showResult('user-result', res.status, data);
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
+            } catch (e) {
+                showResult('user-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Calculator
+        async function testCalculator() {
+            const a = parseFloat(document.getElementById('calc-a').value);
+            const b = parseFloat(document.getElementById('calc-b').value);
+            const op = document.getElementById('calc-op').value;
+            try {
+                const res = await fetch('/api/calc', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ a, b, op })
+                });
+                const data = await res.json();
+                showResult('calc-result', res.status, data);
+            } catch (e) {
+                showResult('calc-result', 500, { error: e.message });
+            }
+        }
+
+        // Test: Time
+        async function testTime() {
+            try {
+                const res = await fetch('/api/time');
+                const data = await res.json();
+                showResult('time-result', res.status, data);
+            } catch (e) {
+                showResult('time-result', 500, { error: e.message });
+            }
+        }
+    </script>
+</body>
+</html>
+

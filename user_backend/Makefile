@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
 # Adjust include paths to point to our own include dir and the sibling project's structure
-CFLAGS = -Iinclude -I../epoll_server_core/include -I../epoll_server_core/deps/l8w8jwt/include -I../epoll_server_core/deps/l8w8jwt/lib/mbedtls/include -Wall -Wextra -g
+CFLAGS = -Iinclude -I../epoll_server_core/include -I../epoll_server_core/deps/l8w8jwt/include -I../epoll_server_core/deps/l8w8jwt/lib/mbedtls/include -I../epoll_server_core/deps/yyjson -Wall -Wextra -g
 
 # Linker flags
 # We need to tell the linker where to find our custom libraries from the sibling directory.
@@ -37,8 +37,15 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	# CFLAGS already includes the path to our own 'include' directory
 	$(CC) $(CFLAGS) -c $< -o $@
 
-.PHONY: all clean
+.PHONY: all clean clean_all rebuild
 
-# Clean the application's build artifacts
+# Clean only user_backend's build artifacts
 clean:
-	rm -rf $(OBJ_DIR) $(BIN_DIR) 
+	rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+# Clean everything: user_backend + epoll_server_core
+clean_all: clean
+	$(MAKE) -C ../epoll_server_core clean_lib
+
+# Full rebuild: clean everything and rebuild
+rebuild: clean_all all

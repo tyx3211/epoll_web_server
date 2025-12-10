@@ -39,4 +39,28 @@ void handle_api_search_post(Connection* conn, ServerConfig* config, int epollFd)
  */
 void handle_api_me(Connection* conn, ServerConfig* config, int epollFd);
 
-#endif // API_H 
+/**
+ * @brief Phase 3 Demo: Handles the /api/json_echo POST request.
+ * Accepts JSON body, reads fields using yyjson, and responds with yyjson-built JSON.
+ */
+void handle_api_json_echo(Connection* conn, ServerConfig* config, int epollFd);
+
+/**
+ * @brief Demo API: GET /api/system_info
+ * Returns server information using yyjson.
+ */
+void handle_api_system_info(Connection* conn, ServerConfig* config, int epollFd);
+
+/**
+ * @brief Demo API: POST /api/calc
+ * Simple calculator using JSON input/output.
+ */
+void handle_api_calc(Connection* conn, ServerConfig* config, int epollFd);
+
+/**
+ * @brief Demo API: GET /api/time
+ * Returns current server time.
+ */
+void handle_api_time(Connection* conn, ServerConfig* config, int epollFd);
+
+#endif // API_H
