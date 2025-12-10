@@ -4,4 +4,7 @@ bin/
 obj/
 log/
 .cache/
+doc/
+out/
 compile_commands.json
+/epoll_server_core_copy

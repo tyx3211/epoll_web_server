@@ -1,11 +1,11 @@
 # Compiler and flags
 CC = gcc
 # Adjust include paths to point to our own include dir and the sibling project's structure
-CFLAGS = -Iinclude -I../Web_Server_for_Learning/include -I../Web_Server_for_Learning/deps/l8w8jwt/include -I../Web_Server_for_Learning/deps/l8w8jwt/lib/mbedtls/include -Wall -Wextra -g
+CFLAGS = -Iinclude -I../epoll_server_core/include -I../epoll_server_core/deps/l8w8jwt/include -I../epoll_server_core/deps/l8w8jwt/lib/mbedtls/include -Wall -Wextra -g
 
 # Linker flags
 # We need to tell the linker where to find our custom libraries from the sibling directory.
-LDFLAGS = -L../Web_Server_for_Learning/lib -lwebserver -ljwt -lpthread -ldl
+LDFLAGS = -L../epoll_server_core/lib -lwebserver -ljwt -lpthread -ldl
 
 # Directories relative to the user_backend folder
 SRC_DIR = src
@@ -27,7 +27,7 @@ all: $(TARGET_APP)
 $(TARGET_APP): $(OBJECTS)
 	@mkdir -p $(BIN_DIR)
 	# First, ensure the dependent libraries are built by calling the sibling makefile
-	$(MAKE) -C ../Web_Server_for_Learning
+	$(MAKE) -C ../epoll_server_core
 	# Now, link our application
 	$(CC) $(CFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
