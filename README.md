@@ -57,6 +57,12 @@ TCP 传输中“粘包”和“半包”是常态。我们手写了一个鲁棒�
 *   **优雅的 Response API**: 无论是极速发送 `http_send_json` 还是精细控制 Header，都得心应手。
 *   **Request/Response 封装**：`HttpRequest` 自动预解析 Query/Form/JSON；`HttpResponse` 既可一行返回（`http_send_*`），也可手术刀式定制 Header/Body。
 
+### 6. 🎢 HTTP/1.1 Keep-Alive 与 Pipeline 支持 (New)
+现代服务器的标配。我们不仅支持长连接（Keep-Alive），还攻克了高难度的 **Pipeline**（管线化）支持。
+*   **内存安全**: 实现了 "Save & Restore" 机制，防御了 Pipeline 场景下缓冲区边界破坏 (Off-by-one) 问题。
+*   **高吞吐**: 实测单线程压测 QPS 突破 2.3 万。
+*   **详情**: 请参考设计文档 [DESIGN_KEEP_ALIVE.md](./epoll_server_core/DESIGN_KEEP_ALIVE.md)。
+
 ---
 
 ## 🛠️ 快速开始 (Quick Start)
@@ -107,6 +113,23 @@ make rebuild
 打开浏览器访问：
 * `http://localhost:8888`        首页
 * `http://localhost:8888/demo.html` 全功能 API 演示页（推荐）
+
+### 4. 🧪 验证 Pipeline (可选)
+
+为了证明服务器在极端条件下的鲁棒性，我们提供了一个专业的 Python 验证脚本。该脚本会一次性向服务器发送 3 个粘连在一起的 HTTP 请求，并验证服务器能否正确解析并依次返回 3 个响应。
+
+```bash
+# 确保服务器正在后台运行 (端口 8888)
+# 在项目根目录下执行：
+python3 test_script/test_pipeline.py
+```
+
+预期输出：
+```
+✅ SUCCESS: Pipeline working perfectly! Server handled 3 requests back-to-back.
+```
+
+你可以查看 `user_backend/log/system.log` (配置为 DEBUG 级别时)，观察服务器如何通过 "Pipeline detected!" 日志来处理这些并发请求。
 
 ---
 
